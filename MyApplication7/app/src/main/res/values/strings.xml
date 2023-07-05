@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">My Application</string>
+    <string name="authentication_failed">Аутентификаця не выполнена</string>
+    <string name="auth_cancel">Аутентификаця отменена</string>
 </resources>
