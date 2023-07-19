@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.main.model
 
+import com.example.myapplication.ui.main.ProfileImage
 import com.google.gson.annotations.SerializedName
 
 data class PhotoDetails(

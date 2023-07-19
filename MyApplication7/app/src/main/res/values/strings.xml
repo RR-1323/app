@@ -1,3 +1,39 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">Humble</string>
+    <string name="authentication_failed">Authentication failed</string>
+    <string name="auth_cancel">Auth canceled</string>
+    <string name="user_total_likes">Liked photos</string>
+    <string name="go_straight_to_authorization">Skip</string>
+    <string-array name="onboarding_texts_array">
+        <item>Здесь собраны сообщества по всевозможным интересам</item>
+        <item>Ты можешь найти новые сабы по интересам и посмотреть сабы, на которые подписан</item>
+        <item>Вкладка избранное хранит закладки с комментариями и сабами. В профиле ты найдёшь информацию о себе.</item>
+    </string-array>
+    <string name="share">Share</string>
+    <string name="content_description">Digest</string>
+    <string name="no_connection">No connection</string>
+    <string name="title_collections">Collections</string>
+    <string name="title_user">User</string>
+    <string name="title_photos">Photos</string>
+    <plurals name="total_photos">
+        <item quantity="one">%1$d photo</item>
+        <item quantity="other">%1$d photos</item>
+    </plurals>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="logout_title">Continue logout?</string>
+    <string name="logout_message">Your saved data would be deleted</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="author_account">Account</string>
+    <string name="about">About</string>
+    <string name="download">Download</string>
+    <string name="made_with">Made with</string>
+    <string name="model">Model</string>
+    <string name="exposure">Expo</string>
+    <string name="aperture">Фperture</string>
+    <string name="focal_length">Focal length</string>
+    <string name="iso">ISO</string>
+    <string name="digest_name">Digest name</string>
+
 </resources>

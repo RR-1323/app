@@ -1,6 +1,7 @@
 package com.example.myapplication.ui.main.detail
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.DownloadManager
 import android.content.*
 import android.content.pm.PackageManager
@@ -30,8 +31,10 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentDetailBinding
+import com.example.myapplication.ui.main.model.PhotoDetails
 import com.example.myapplication.ui.main.state.LoadState
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 
 class DetailFragment : Fragment() {
     private var lat: Double? = null
@@ -69,21 +72,47 @@ class DetailFragment : Fragment() {
     }
 
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
 
         val id = arguments?.getString("id")
-
+        viewLifecycleOwner.lifecycleScope.launch {
+          val photo =  viewModel.loadPhoto(id.toString())
+            binding.isLiked.setOnClickListener{
+                if (photo.likedByUser) {
+                    viewModel.unliked(photo.id)
+                } else {
+                    viewModel.liked(photo.id)
+                }
+                setLikeClick(photo)
+            }
+            }
 
         viewModel.loadPhotoDetails(id.toString())
-
+        updateUi()
         getLoadingState()
         setLocationClick()
-        //loadStateLike()
-        updateUi()
+        loadStateLike()
 
     }
+
+    private fun loadStateLike() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.loadState.collect { loadStateLike ->
+                binding.error.isVisible =
+                    loadStateLike == LoadState.ERROR
+            }
+        }
+    }
+
+    private fun setLikeClick(item: PhotoDetails) {
+
+        viewModel.changeLike(item)
+    }
+
+
     override fun onResume() {
         super.onResume()
         val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
@@ -105,17 +134,19 @@ class DetailFragment : Fragment() {
             }
         }
 
-       // ContextCompat.registerReceiver(context, br, filter, receiverFlags)
+
 
         registerReceiver(requireContext(), receiver, filter, RECEIVER_EXPORTED)
     }
+
     private fun showFailedDownloadSnackbar() {
         Snackbar.make(
             binding.myCoordinatorLayout,
-           " getString(R.string.failed_download)",
+            " getString(R.string.failed_download)",
             Snackbar.LENGTH_LONG
         ).show()
     }
+
     private fun setUploadedLocation(state: DetailsState.Success) {
         if (state.data.location.position.latitude != null && state.data.location.position.longitude != null) {
             lat = state.data.location.position.latitude
@@ -129,13 +160,15 @@ class DetailFragment : Fragment() {
                 viewModel.loadState.collect { loadState -> updateUiOnServerResponse(loadState) }
             }
     }
-        private fun updateUiOnServerResponse(loadState: LoadState) {
-            if (loadState == LoadState.ERROR) {
-                binding.error.isVisible = true
-                binding.scroll.isVisible = false
-            }
-            if (loadState == LoadState.SUCCESS) updateUi()
+
+    private fun updateUiOnServerResponse(loadState: LoadState) {
+        if (loadState == LoadState.ERROR) {
+            binding.error.isVisible = true
+            binding.scroll.isVisible = false
         }
+        if (loadState == LoadState.SUCCESS) updateUi()
+    }
+
     private fun showMissingPermissionAlert() {
         val alertDialog = AlertDialog.Builder(requireContext()).create()
         alertDialog.setTitle("getString(R.string.alert_title)")
@@ -143,7 +176,7 @@ class DetailFragment : Fragment() {
         alertDialog.setIcon(android.R.drawable.ic_dialog_alert)
         alertDialog.setButton(
             DialogInterface.BUTTON_POSITIVE,
-           " getString(R.string.ok)"
+            " getString(R.string.ok)"
         ) { dialog, _ ->
             dialog.cancel()
         }
@@ -157,17 +190,32 @@ class DetailFragment : Fragment() {
                     DetailsState.NotStartedYet -> {}
                     is DetailsState.Success -> {
                         bindUploadedTexts(state)
-
+                        bindUploadedImages(state)
                         setUploadedLocation(state)
-                       bindUploadedImages(state)
-//                        setToolbar(state.data.id)
-//                        setLikeClick(state.data)
+                        setToolbar(state.data.id)
+                        setLikeClick(state.data)
+                        binding.isLiked.isSelected = state.data.likedByUser
                         setDownloadOnClick(state.data.urls.raw, downloadManager)
                     }
 
                 }
             }
         }
+    }
+
+    private fun setToolbar(id: String) {
+        val button = binding.shareBar.menu.getItem(0)
+        button?.setOnMenuItemClickListener {
+            shareLinkOnPhoto(id)
+            true
+        }
+    }
+
+    private fun shareLinkOnPhoto(id: String) {
+        val sharingIntent = Intent(Intent.ACTION_SEND)
+        sharingIntent.type = "text/plain"
+        sharingIntent.putExtra(Intent.EXTRA_TEXT, "https://unsplash.com/photos/$id")
+        startActivity(Intent.createChooser(sharingIntent, getString(R.string.share)))
     }
 
     private fun bindUploadedImages(state: DetailsState.Success) {
@@ -184,9 +232,12 @@ class DetailFragment : Fragment() {
             .into(this)
     }
 
+    @SuppressLint("StringFormatInvalid")
     private fun bindUploadedTexts(state: DetailsState.Success) {
+
+
         binding.authorName.text = state.data.user.name
-   //     binding.authorAccount.text = getString(R.string.author_account, state.data.user.username)
+        binding.authorAccount.text = getString(R.string.author_account, state.data.user.username)
 
         binding.location.text = state.data.location.city ?: "N/A"
         binding.currentLikes.text = state.data.likes.toString()
@@ -195,19 +246,31 @@ class DetailFragment : Fragment() {
         binding.tags.text = state.data.tags.joinToString { tag ->
             "#${tag.title ?: "N/A"}"
         }
-       // binding.exif.text = buildExifText(state)
-      /*  binding.aboutAuthor.text = getString(
+        binding.exif.text = buildExifText(state)
+        binding.aboutAuthor.text = getString(
             R.string.about, state.data.user.username, state.data.user.bio ?: "N/A"
-        )*/
-       /* binding.downloadsCount.text =
-            getString(R.string.download, state.data.downloads, state.data.downloads)*/
+        )
+        binding.downloadsCount.text =getString(R.string.download, state.data.downloads, state.data.downloads)
+
     }
+
     private fun showNoLocationDataSnackbar() {
         Snackbar.make(
             binding.myCoordinatorLayout,
             "getString(R.string.no_location)",
             Snackbar.LENGTH_LONG
         ).show()
+    }
+    @SuppressLint("StringFormatInvalid")
+    private fun buildExifText(state: DetailsState.Success): String {
+        return buildString {
+            append(getString(R.string.made_with, state.data.exif.make ?: "N/A"))
+            append(getString(R.string.model, state.data.exif.model ?: "N/A"))
+            append(getString(R.string.exposure, state.data.exif.exposureTime ?: "N/A"))
+            append(getString(R.string.aperture, state.data.exif.aperture ?: "N/A"))
+            append(getString(R.string.focal_length, state.data.exif.focalLength ?: "N/A"))
+            append(getString(R.string.iso, state.data.exif.iso?.toString() ?: "N/A"))
+        }
     }
 
     private fun setDownloadOnClick(url: String, downloadManager: DownloadManager) {
@@ -234,6 +297,7 @@ class DetailFragment : Fragment() {
             launcher.launch(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE))
         }
     }
+
     private fun showSuccessfulDownloadSnackbar(uri: Uri) {
         val mySnackbar = Snackbar.make(
             binding.myCoordinatorLayout,
@@ -281,15 +345,6 @@ class DetailFragment : Fragment() {
         super.onPause()
         requireContext().unregisterReceiver(receiver)
     }
-  /*  private fun buildExifText(state: DetailsState.Success): String {
-        return buildString {
-            append(getString(R.string.made_with, state.data.exif.make ?: "N/A"))
-            append(getString(R.string.model, state.data.exif.model ?: "N/A"))
-            append(getString(R.string.exposure, state.data.exif.exposureTime ?: "N/A"))
-            append(getString(R.string.aperture, state.data.exif.aperture ?: "N/A"))
-            append(getString(R.string.focal_length, state.data.exif.focalLength ?: "N/A"))
-            append(getString(R.string.iso, state.data.exif.iso?.toString() ?: "N/A"))
-        }
-    }*/
+
 
 }

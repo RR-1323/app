@@ -1,38 +1,38 @@
 package com.example.myapplication.ui.main.repository
 
+import android.app.Application
 import androidx.paging.*
-import com.example.myapplication.ui.main.photolistnew
+import com.example.myapplication.PhotoEntity
+
+import com.example.myapplication.ui.main.Photo
+import com.example.myapplication.ui.main.WrapperPhotoDto
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 
 import okio.IOException
 import retrofit2.HttpException
 
 
-class PhotosPagingSourceRepositoryImpl: PagingSource<Int, photolistnew.photoNewItem>() {
-private val photoRemoteRepository = PhotoRemoteRepositoryImpl()
+class PhotosPagingSourceRepositoryImpl(val application: Application) {
 
-
-
-
-
-    override suspend fun load(params: PagingSource.LoadParams<Int>): PagingSource.LoadResult<Int, photolistnew.photoNewItem> {
-        val page = params.key ?: 1
-        return try {
-            val response = photoRemoteRepository.getPhotoList(page)
-            PagingSource.LoadResult.Page(
-                data = response,
-                prevKey = null,
-                nextKey = if (response.isEmpty()) null else page + 1
-            )
-        } catch
-            (exception: IOException) {
-
-            return LoadResult.Error(exception)
-        } catch (exception: HttpException) {
-
-            return LoadResult.Error(exception)
+/*
+val photoRemoteRepository = PhotoRemoteRepositoryImpl(application)
+    val localRepository = LocalRepositoryImpl()
+ @OptIn(ExperimentalPagingApi::class)
+ fun getFlowPhoto(): Flow<PagingData<Photo>>
+            = Pager(
+        config = PagingConfig(
+            pageSize = 10,
+            enablePlaceholders = false
+        ),
+        remoteMediator = PhotosRemoteMediator(application),
+        pagingSourceFactory = { localRepository.getPagingData() }
+    ).flow.map {
+        it.map { entity ->
+            entity.toPhoto()
         }
     }
 
-    override fun getRefreshKey(state: PagingState<Int, photolistnew.photoNewItem>): Int? = 1
+*/
 }

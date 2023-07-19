@@ -1,5 +1,3 @@
-package com.example.myapplication.ui.main.model
-
 data class Profile(
     val id: String,
     val userName: String,

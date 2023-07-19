@@ -1,13 +1,16 @@
 package com.example.myapplication.ui.main.detail
 
 import android.annotation.SuppressLint
+import android.app.Application
 import android.app.DownloadManager
 import android.database.Cursor
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.ui.main.LikeDetailPhotoUseCaseImpl
 import com.example.myapplication.ui.main.model.PhotoDetails
 import com.example.myapplication.ui.main.repository.PhotoRemoteRepositoryImpl
 import com.example.myapplication.ui.main.state.LoadState
@@ -18,7 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 
-class DetailViewModel : ViewModel() {
+class DetailViewModel(application: Application) : AndroidViewModel (application) {
 
     private val _state = MutableStateFlow<DetailsState>(DetailsState.NotStartedYet)
     val state = _state.asStateFlow()
@@ -26,20 +29,74 @@ class DetailViewModel : ViewModel() {
     var downloadID = 0L
     var downloading = true
     var success = false
-val repositoryImpl = PhotoRemoteRepositoryImpl()
+val repositoryImpl = PhotoRemoteRepositoryImpl(application)
     val _loadState = MutableStateFlow(LoadState.START)
     val loadState = _loadState.asStateFlow()
+    val likeDetailPhotoUseCase = LikeDetailPhotoUseCaseImpl(application)
 
    val handler = CoroutineExceptionHandler { _, _ ->
         _loadState.value = LoadState.ERROR
     }
+
+
     fun loadPhotoDetails(id: String) {
         viewModelScope.launch(Dispatchers.IO + handler) {
             _loadState.value = LoadState.SUCCESS
             _state.value = DetailsState.Success(repositoryImpl.getPhotoDetail (id = id))
+          val photo = repositoryImpl.getPhotoDetail (id = id)
+        }
+
+    }
+   suspend fun loadPhoto(id: String): PhotoDetails= repositoryImpl.getPhotoDetail (id = id)
+
+
+
+
+
+    fun liked(id: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repositoryImpl.likePhoto(id)
         }
     }
+        fun unliked(id: String){
+            viewModelScope.launch(Dispatchers.IO) {
+                repositoryImpl.unlikePhoto(id)
+            }
+}
+    fun changeLike(item: PhotoDetails) {
 
+
+                val id = item.id
+                val like = item.likedByUser
+                viewModelScope.launch(Dispatchers.IO) {
+                    try {
+                        if (!like) {
+                            repositoryImpl.likePhoto(id)
+//                            unsplashRepository.setLike(id)
+//                            detailPhoto.value!!.likedByUser = true
+//                            likeLiveData.postValue(true)
+                        } else {
+                            repositoryImpl.unlikePhoto(id)
+//                            unsplashRepository.deleteLike(id)
+//                            detailPhoto.value!!.likedByUser = false
+//                            likeLiveData.postValue(false)
+                        }
+                    } catch (t: Throwable) {
+                     //   errorLiveData.postValue(t.toString())
+                    }
+                }
+
+
+    }
+    fun like(item: PhotoDetails) {
+        viewModelScope.launch(Dispatchers.IO + handler) {
+//repositoryImpl.likeDetailPhotoRepo(item)
+           likeDetailPhotoUseCase.likeDetailPhoto(item)
+
+            _loadState.value = LoadState.SUCCESS
+            _state.value = DetailsState.Success(repositoryImpl.getPhotoDetail (id = item.id))
+        }
+    }
 
     fun startDownLoad(url: String, downloadManager: DownloadManager) {
         val downloadRequest = DownloadManager.Request(Uri.parse(url))

@@ -1,15 +1,30 @@
 package com.example.myapplication.ui.main.profile
 
+import Profile
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.ui.main.model.Profile
-import com.example.myapplication.ui.main.photolistnew
-import com.example.myapplication.ui.main.repository.PhotoRemoteRepositoryImpl
+
+
+import com.example.myapplication.ui.main.Photo
+import com.example.myapplication.ui.main.repository.*
+import com.example.myapplication.ui.main.responses.me.MeResponse
 import com.example.myapplication.ui.main.state.LoadState
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
-class ProfileViewModel : ViewModel() {
+class ProfileViewModel(application: Application) : ViewModel() {
+    private val photosRepositoryImpl = PhotoRemoteRepositoryImpl(application)
+    private val localRepository = LocalRepositoryImpl()
+    private val photosRepository =
+        com.example.myapplication.ui.main.profile.PhotosPagingSourceRepositoryImpl(
+            photosRepositoryImpl,
+            localRepository
+        )
+    private val photosPagingUseCase = PhotosPagingUseCaseImpl(photosRepository)
+    private val query = MutableStateFlow("")
+
+
 
     private val userName = MutableStateFlow("")
     private var job: Job? = null
@@ -26,22 +41,33 @@ class ProfileViewModel : ViewModel() {
     val handler = CoroutineExceptionHandler { _, _ ->
         _loadState.value = LoadState.ERROR
     }
-val repositoryImpl = PhotoRemoteRepositoryImpl()
+    val repositoryImpl = PhotoRemoteRepositoryImpl(application)
     fun getProfile() {
         viewModelScope.launch(Dispatchers.IO + handler) {
             _loadState.value = LoadState.SUCCESS
+
             _state.value = ProfileState.Success(repositoryImpl.getProfile())
+
         }
+
+    }
+
+
+    suspend fun getUserProfile(): MeResponse {
+
+        query.value = repositoryImpl.getProfile().name.toString()
+        return repositoryImpl.getProfile()
+
     }
 /*
-    @OptIn(ExperimentalCoroutinesApi::class)
     fun getPhoto() = userName.asStateFlow()
-        .flatMapLatest { repositoryImpl.getPhoto(Requester.PROFILE.apply { param = it })}
-        .cachedIn(CoroutineScope(Dispatchers.IO))
-*/
-    fun like(item: photolistnew.photoNewItem) {
+        .flatMapLatest { photosPagingUseCase.getPhoto(Requester.PROFILE.apply { param = it }) }
+        .cachedIn(CoroutineScope(Dispatchers.IO))*/
+
+
+    fun like(item: Photo) {
         viewModelScope.launch(Dispatchers.IO + handler) {
-       //     photoLikeUseCase.likePhoto(item)
+            //     photoLikeUseCase.likePhoto(item)
             _loadState.value = LoadState.SUCCESS
         }
     }

@@ -1,0 +1,47 @@
+package com.example.myapplication.ui.main.repository
+
+import android.app.Application
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.LoadType
+import androidx.paging.PagingState
+import androidx.paging.RemoteMediator
+import com.example.myapplication.PhotoEntity
+
+
+@OptIn(ExperimentalPagingApi::class)
+class PhotosRemoteMediatorFav (val application: Application, val user: String): RemoteMediator<Int, PhotoEntity>() {
+    /*    private var pageIndex = 0
+    val photoRemoteRepository = PhotoRemoteRepositoryImpl(application)
+    val localRepository = LocalRepositoryImpl()
+    @OptIn(ExperimentalPagingApi::class)
+    override suspend fun load(
+        loadType: LoadType,
+        state: PagingState<Int, PhotoEntity>,
+    ): MediatorResult {
+        pageIndex = getIndex(loadType) ?: return MediatorResult.Success(true)
+
+        return try {
+            val response = photoRemoteRepository.getLikedPhotoList(user, pageIndex).toListEntity()
+
+            if (loadType == LoadType.REFRESH) localRepository.refresh(response)
+            else localRepository.insertData(response)
+            MediatorResult.Success(endOfPaginationReached = response.isEmpty())
+        } catch (e: Exception) {
+            MediatorResult.Error(e)
+        }
+    }
+
+    private fun getIndex(loadType: LoadType): Int? {
+        return when (loadType) {
+            LoadType.PREPEND -> null
+            LoadType.REFRESH -> 0
+            LoadType.APPEND -> ++pageIndex
+        }
+    }*/
+    override suspend fun load(
+        loadType: LoadType,
+        state: PagingState<Int, PhotoEntity>
+    ): MediatorResult {
+        TODO("Not yet implemented")
+    }
+}

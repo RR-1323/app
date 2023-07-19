@@ -1,35 +1,96 @@
 package com.example.myapplication.ui.main.repository
 
+import Profile
+import android.app.Application
+import android.content.ContentValues
 import android.content.ContentValues.TAG
 import android.util.Log
-import com.example.myapplication.ui.main.ResponseToken
+import com.example.myapplication.PhotoListDto
+import com.example.myapplication.ui.main.*
+import com.example.myapplication.ui.main.model.Digest
+import com.example.myapplication.ui.main.model.DigestDto
 import com.example.myapplication.ui.main.model.PhotoDetails
-import com.example.myapplication.ui.main.model.Profile
-import com.example.myapplication.ui.main.photolistnew
-import com.example.myapplication.ui.main.retrofit
+import com.example.myapplication.ui.main.profile.Requester
+import com.example.myapplication.ui.main.responses.me.MeResponse
+import retrofit2.http.DELETE
+import retrofit2.http.POST
+import retrofit2.http.Path
 
 
+class PhotoRemoteRepositoryImpl(private val application: Application) {
 
-class PhotoRemoteRepositoryImpl (
+//    suspend fun getPhotoList(page: Int): photolistnew {
+//        Log.d(TAG, "getPhotoList:")
+//      return  retrofit.getPhotos(page)
+//    }
 
-
-) {
-
-    suspend fun getPhotoList(page: Int): photolistnew {
-        Log.d(TAG, "getPhotoList:")
-      return  retrofit.getPhotos(page)
+    suspend fun getPhotoListLast(requester: Requester, page: Int): PhotoListDto {
+        Log.d(ContentValues.TAG, "getPhotoList: $requester")
+        return when (requester) {
+            Requester.ALL_LIST -> checkRequesters(requester.param, page)
+            Requester.COLLECTIONS -> getRetrofitThis().getDigestPhotos(requester.param, page)
+            Requester.PROFILE -> getRetrofitThis().getProfileLikes(requester.param, page)
+        }
     }
+
+    private suspend fun checkRequesters(query: String, page: Int) =
+        if (query == "") getRetrofitThis().getPhotos(page)
+        else getRetrofitThis().searchPhotos(query, page).results
 
 
     suspend fun getPhotoDetail(id: String): PhotoDetails {
         Log.d(TAG, "getPhotoDetails:")
-        return retrofit.getPhotoDetails(id)
+        return getRetrofitThis().getPhotoDetails(id).toPhotoDetails()
     }
 
-    suspend fun getProfile(): Profile {
+    suspend fun getProfile(): MeResponse {
         Log.d(TAG, "getProfile:")
-        return retrofit.getProfile()
+        return getRetrofitThis().me()
     }
 
+
+    suspend fun getLikedPhotos(user: String, page: Int): PhotoListDto {
+        Log.d(TAG, "getPhotoList:")
+        return  getRetrofitThis().getLikedPhotos(user, page)
+    }
+
+
+
+suspend fun getLikedPhotoList(user: String, page: Int): PhotoListDto {
+    return  getRetrofitThis().getLikedPhotos  (user,page)
+}
+
+
+    suspend fun likeDetailPhotoRepo(item: PhotoDetails) {
+        if (item.likedByUser) likePhoto(item.id)
+        else unlikePhoto(item.id)
+    }
+    suspend fun checkRequester(/*query: String, */page: Int): PhotoListDto =
+      /*  if (query == "")*/  getRetrofitThis().getPhotos(page)
+       // else getRetrofitThis().searchPhotos(query, page).results
+
+
+    suspend fun getDigests(page: Int): List<Digest> =
+        getRetrofitThis().getDigests(page).toListDigest()
+
+
+    suspend fun likeLast(id: String): WrapperPhotoDto = getRetrofitThis().likeLast(id)
+
+
+    suspend fun unlikeLast(id: String) : WrapperPhotoDto= getRetrofitThis().unlikeLast(id)
+
+  suspend fun getDigestInfo(id: String): Digest = getRetrofitThis().getDigestInfo(id).toDigest()
+
+   suspend fun likePhoto(id: String):Photo = getRetrofitThis().like(id).photo.toPhoto()
+
+    suspend fun unlikePhoto(id: String): Photo = getRetrofitThis().unlike(id).photo.toPhoto()
+    fun List<DigestDto>.toListDigest(): List<Digest> {
+        val newList = mutableListOf<Digest>()
+
+        this.forEach { item ->
+            newList.add(item.toDigest())
+        }
+        return newList
+    }
 
 }

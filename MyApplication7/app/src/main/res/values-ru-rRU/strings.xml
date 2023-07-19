@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">    <string name="app_name">Unsplash</string>
+    <string name="authentication_failed">Аутентификаця не выполнена</string>
+    <string name="auth_cancel">Аутентификаця отменена</string>
+    <string name="user_total_likes">Понравилось</string>
+    <string name="go_straight_to_authorization">Пропустить</string>
+    <string-array name="onboarding_texts_array">
+        <item>Делайте фото, публикуйте, собирайте аудиторию, получайте отзывы!</item>
+        <item>Делитесь с друзьями, создавайте коллекции</item>
+        <item>Загружайте свои любимые фотографии и отслеживайте статистику</item>
+    </string-array>
+    <string name="share">Поделиться</string>
+    <string name="content_description">Дайджест</string>
+    <string name="no_connection">Связь отсутствует</string>
+    <string name="title_collections">Коллекции</string>
+    <string name="title_user">Пользователь</string>
+    <string name="title_photos">Фото</string>
+    <plurals name="total_photos" tools:ignore="MissingQuantity">
+        <item quantity="one">%1$d photo</item>
+        <item quantity="other">%1$d photos</item>
+    </plurals>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="logout_title">Продолжить выход?</string>
+    <string name="logout_message">Сохраненные данные будут удалены</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="author_account">Аккаунт</string>
+    <string name="about">Автор</string>
+    <string name="download">Скачать</string>
+    <string name="made_with">Камера</string>
+    <string name="model">Модель</string>
+    <string name="exposure">Экспозиция</string>
+    <string name="aperture">Апертура</string>
+    <string name="focal_length">Фокус</string>
+    <string name="iso">ISO</string>
+    <string name="digest_name">Коллекция</string></resources>

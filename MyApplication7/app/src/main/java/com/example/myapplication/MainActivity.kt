@@ -4,70 +4,44 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
+import com.example.myapplication.databinding.ActivityMainBinding
 import com.example.myapplication.ui.main.MainFragment
 
 
 import com.example.myapplication.ui.main.state.LoadState
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-    }
-    /*
+        val navView: BottomNavigationView = binding.navView
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
+        val navController = navHostFragment.navController
+        //   val navController = findNavController(R.id.fragmentContainerView)
 
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        intent?.let{
-            handleDeepLink(it)
-            Log.d("onNewIntent", "$authcode")
-        }
+        navView.setupWithNavController(navController)
 
-        val newIntent = Intent(this@MainActivity, MainActivity::class.java)
-        startActivity(newIntent)
-    }
-
-    companion object {
-        // dummy request code to identify the request
-        private const val REQUEST_CODE = 123
-    }
-
-    fun handleDeepLink(intent: Intent) {
-        if (intent.action != Intent.ACTION_VIEW) return
-        val deepLinkUri = intent.data ?: return
-        if (deepLinkUri.queryParameterNames.contains("code")) {
-            authcode = deepLinkUri.getQueryParameter("code") ?: return
-         getToken(authcode)
-            //  viewModel.createToken(authcode)
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            if (destination.id == R.id.onboardingFragment || destination.id == R.id.authFragment)
+                navView.visibility = View.GONE
+            else navView.visibility = View.VISIBLE
         }
     }
-
-    fun getToken(authCode: String) {
-       lifecycleScope.launch(Dispatchers.IO) {
-        //    _loadState.emit(LoadState.START)
-            Log.d("onIntent", "getToken ${authCode}")
-            kotlin.runCatching {
-                retrofitTok.getToken(code = authCode)
-
-            }.fold(
-                onSuccess = {
-                    accessToken = it.access_token
-                    Log.d("onIntent", "success token" + it.access_token)
-                  //  _loadState.emit(LoadState.SUCCESS)
-                },
-                onFailure = {
-                    Log.d("onIntent", "error token" + it.message ?: "")
-                   // _loadState.emit(LoadState.ERROR)
-                }
-            )
-        }
-    }*/
 }

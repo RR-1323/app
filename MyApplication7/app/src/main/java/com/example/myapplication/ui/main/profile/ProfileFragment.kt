@@ -1,11 +1,10 @@
 package com.example.myapplication.ui.main.profile
 
-import android.content.BroadcastReceiver
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -20,14 +19,14 @@ import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.myapplication.R
-import com.example.myapplication.databinding.FragmentDetailBinding
 import com.example.myapplication.databinding.FragmentProfileBinding
 
 import com.example.myapplication.ui.main.adapter.PhotoPagingAdapter
 import com.example.myapplication.ui.main.auth.TOKEN_ENABLED_KEY
 import com.example.myapplication.ui.main.auth.TOKEN_SHARED_KEY
-import com.example.myapplication.ui.main.detail.DetailViewModel
-import com.example.myapplication.ui.main.photolistnew
+import com.example.myapplication.ui.main.Photo
+import com.example.myapplication.ui.main.ViewModelFactory
+import com.example.myapplication.ui.main.auth.TOKEN_SHARED_NAME
 import com.example.myapplication.ui.main.state.ClickableView
 import com.example.myapplication.ui.main.state.LoadState
 import kotlinx.coroutines.launch
@@ -37,7 +36,10 @@ class ProfileFragment : Fragment() {
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: ProfileViewModel by viewModels()
+    private val viewModel: ProfileViewModel by viewModels {
+        ViewModelFactory(activity?.application!!)
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,27 +60,43 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-     //   observe()
-     //   getLoadingState()
-        loadStateItemsObserve()
-        loadStateLike()
-        settingAdapter()
-        initRefresher()
-        setLocationClick()
+       viewLifecycleOwner.lifecycleScope.launch {
+
+
+           getLoadingState()
+           loadStateItemsObserve()
+           loadStateLike()
+
+           initRefresher()
+           setLocationClick()
+
+           setUpLogoutButton(createSharedPreference(TOKEN_SHARED_NAME))
+
+           settingAdapter()
+           //observe()
+
+        }
+
 
     }
     fun createSharedPreference(sharedName: String) =
         requireContext().getSharedPreferences(sharedName, Context.MODE_PRIVATE)
 
+
 /*
+
     private fun observe() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.getPhoto().collect { pagingData ->
-                adapter.submitData(pagingData)
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewModel.getUserProfile()
+                viewModel.getPhoto().collect { pagingData ->
+                    adapter.submitData(pagingData)
+                }
             }
         }
     }
-
+*/
     private fun getLoadingState() {
         viewModel.getProfile()
         viewLifecycleOwner.lifecycleScope
@@ -86,7 +104,7 @@ class ProfileFragment : Fragment() {
                 viewModel.loadState.collect { loadState -> updateUiOnServerResponse(loadState) }
             }
     }
-*/
+
     private fun updateUiOnServerResponse(loadState: LoadState) {
         if (loadState == LoadState.ERROR) {
             binding.error.isVisible = true
@@ -96,27 +114,31 @@ class ProfileFragment : Fragment() {
             viewLifecycleOwner.lifecycleScope
                 .launchWhenStarted {
                     viewModel.state
-                        .collect { state -> showInfo(state) }
+                        .collect { state ->  showInfo(state) }
                 }
         }
     }
 
+    @SuppressLint("StringFormatInvalid")
     private fun showInfo(state: ProfileState) {
+
+
         when (state) {
             ProfileState.NotStartedYet -> {}
             is ProfileState.Success -> {
                 binding.locationButton.isEnabled = true
-                viewModel.setUsername(state.data.userName) { adapter.refresh() }
-                binding.location.text = state.data.location
-                if (state.data.location == null) binding.locationString.visibility = View.GONE
-                binding.username.text = state.data.userName
+                state.data.name?.let { viewModel.setUsername(it) { adapter.refresh() } }
+                binding.location.text = state.data.id
+           /*     if (state.data.location == null) */binding.locationString.visibility = View.GONE
+                binding.username.text = state.data.name.toString()
                 binding.name.text = state.data.name
-          //      binding.likes.text = getString("R.string.user_total_likes", state.data.totalLikes)
-                binding.avatar.loadImage(state.data.avatar)
-                location = state.data.location
+             //   binding.likes.text = getString(R.string.user_total_likes, state.data.totalLikes)
+                binding.avatar.loadImage(state.data.iconImg.toString())
+                location = state.data.goldExpiration
             }
-
         }
+
+
     }
     fun ImageView.loadImage(urls: String) {
         Glide.with(this)
@@ -127,7 +149,9 @@ class ProfileFragment : Fragment() {
             .into(this)
     }
 
-    private fun onClick(buttonState: ClickableView, item: photolistnew.photoNewItem) {
+
+
+    private fun onClick(buttonState: ClickableView, item: Photo) {
         when (buttonState) {
             ClickableView.PHOTO -> {
 
@@ -136,18 +160,14 @@ class ProfileFragment : Fragment() {
 
                     putString("id", id)
 
-//            putString("status", status)
-//            putString("type", type)
-//
-//            putString("location", location)
-//            putString("episode", episode)
+
 
                 }
 
                 findNavController().navigate(R.id.action_profileFragment_to_detailFragment, bundle)
             }
-                  /*  findNavController().navigate(ProfileFragmentDirections
-                    .actionNavigationUserToNavigationPhotoDetails(item.id))*/
+            /*  findNavController().navigate(ProfileFragmentDirections
+              .actionNavigationUserToNavigationPhotoDetails(item.id))*/
             ClickableView.LIKE -> {
            //     viewModel.like(item)
              //   getLoadingState()
@@ -209,15 +229,15 @@ class ProfileFragment : Fragment() {
 
     private fun setUpAlertDialog(preferences: SharedPreferences) {
         val dialog = AlertDialog.Builder(requireContext())
-        dialog.setTitle("R.string.logout_title")
-            .setMessage("R.string.logout_message")
-            .setPositiveButton("R.string.yes") { _, _ ->
+        dialog.setTitle(R.string.logout_title)
+            .setMessage(R.string.logout_message)
+            .setPositiveButton(R.string.yes) { _, _ ->
                 preferences.edit().putString(TOKEN_SHARED_KEY, "").apply()
                 preferences.edit().putBoolean(TOKEN_ENABLED_KEY, false).apply()
-             //   val action = ProfileFragmentDirections.actionNavigationUserToAuthFragment()
-              //  findNavController().navigate(action)
+
+                findNavController().navigate(R.id.action_profileFragment_to_authFragment)
             }
-            .setNegativeButton("R.string.no") { _, _ ->
+            .setNegativeButton(R.string.no) { _, _ ->
                 dialog.create().hide()
             }
         dialog.create().show()

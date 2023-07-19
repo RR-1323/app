@@ -9,36 +9,31 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
 import androidx.navigation.fragment.findNavController
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentMainBinding
 import com.example.myapplication.ui.main.adapter.PhotoPagingAdapter
 import com.example.myapplication.ui.main.state.ClickableView
+import com.example.myapplication.ui.main.state.LoadState
 
 import kotlinx.coroutines.launch
 
 
 class MainFragment : Fragment() {
 
-
-
-       //private val throwable = MutableLiveData<Throwable?>(null)
     private var _binding: FragmentMainBinding? = null
-
-    // private  var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
-
-
-  //  val viewModel = ViewModelProvider(this, ViewModelFactory)[MainViewModel::class.java]
-  private val viewModel: MainViewModel by viewModels()
-
+    private val viewModel: MainViewModel by viewModels {
+        ViewModelFactory(
+            activity?.application!!
+        )
+    }
     private val adapter by lazy {
         PhotoPagingAdapter { buttonState, item ->
             onClick(buttonState, item)
         }
     }
- //   private val pagedAdapter = PhotoPagingAdapter { item -> onItemClick(item) }
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,53 +51,48 @@ class MainFragment : Fragment() {
     }
 
 
-
-
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        observe()
+    //    observe()
         loadStateItemsObserve()
         loadStateLike()
         settingAdapter()
-
+        setSearchView()
         initRefresher()
+
     }
-
-    private fun observe() {
+/*    private fun observe() {
         viewLifecycleOwner.lifecycleScope.launch {
-
-            viewModel.pagedMovies.collect { pagingData ->
+            viewModel.getPhoto().collect { pagingData ->
                 adapter.submitData(pagingData)
             }
+        }
+    }*/
 
+    private fun setSearchView() {
+        val searchView = binding.searchBar.menu.getItem(0).actionView as SearchView
+        searchView.setChangeTextListener { query ->
+            viewModel.setQuery(query) { adapter.refresh() }
         }
     }
 
-    private fun onClick(buttonState: ClickableView, item: photolistnew.photoNewItem) {
+
+    private fun onClick(buttonState: ClickableView, item: Photo) {
         val bundle = Bundle().apply {
             val id = item.id
 
             putString("id", id)
 
-//            putString("status", status)
-//            putString("type", type)
-//
-//            putString("location", location)
-//            putString("episode", episode)
 
         }
 
-        findNavController().navigate(R.id.action_mainFragment_to_detailFragment, bundle)
+     //   findNavController().navigate(R.id.action_mainFragment_to_detailFragment, bundle)
+        when (buttonState) {
+            ClickableView.PHOTO -> findNavController().navigate(R.id.action_mainFragment_to_detailFragment, bundle)
+            ClickableView.LIKE -> viewModel.like(item)
+        }
 
-
-
-//        when (buttonState) {
-//            ClickableView.PHOTO -> findNavController().navigate(R.id.action_mainFragment_to_detailFragment)
-//            ClickableView.LIKE -> viewModel.like(item)
-//        }
     }
-
 
 
     fun SearchView.setChangeTextListener(block: (query: String) -> Unit) {
@@ -138,11 +128,13 @@ class MainFragment : Fragment() {
 
     private fun loadStateLike() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.isLoading.collect(){
+            viewModel.loadState.collect { loadStateLike ->
+                binding.error.isVisible = loadStateLike == LoadState.ERROR
             }
-
         }
     }
+
+
 
     private fun initRefresher() {
         binding.swipeRefresh.setOnRefreshListener {

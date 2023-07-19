@@ -4,19 +4,21 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import com.example.myapplication.databinding.PhotoViewHolderBinding
-import com.example.myapplication.ui.main.photolistnew
+import com.example.myapplication.ui.main.Photo
 
 import com.example.myapplication.ui.main.state.ClickableView
 
 
 class PhotoPagingAdapter(
-    private val onClick: (ClickableView, photolistnew.photoNewItem) -> Unit
-) : PagingDataAdapter<photolistnew.photoNewItem, PhotoViewHolder>(PhotoDiff()) {
+    private val onClick: (ClickableView, Photo) -> Unit
+) : PagingDataAdapter<Photo, PhotoViewHolder>(PhotoDiff()) {
 
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
         getItem(position)?.let { item ->
+
             holder.bind(item) { ClickableView, Photo ->
                 onClick(ClickableView, Photo)
+
             }
         }
     }

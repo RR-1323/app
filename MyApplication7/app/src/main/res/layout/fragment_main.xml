@@ -40,7 +40,7 @@
             android:id="@+id/search_bar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/teal_200"
+            android:background="@color/green"
             app:title="Title photos"
             app:menu="@menu/search_menu" />
 
@@ -78,9 +78,8 @@
             android:layout_gravity="end|center_vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_launcher_background"
-            app:tint="@color/purple_200" />
-
+            android:src="@drawable/ic_wifi_off"
+            app:tint="@color/error_text" />
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

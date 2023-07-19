@@ -9,49 +9,59 @@
     <View
         android:id="@+id/black_rectangle"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@color/black"
+        android:layout_height="150dp"
+        android:background="@drawable/group11"
         app:layout_constraintBottom_toTopOf="@+id/btnAuth"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0"
+
+        />
+    <ImageView
+        android:id="@+id/purple_rec"
+        android:layout_width="0dp"
+        android:layout_height="300dp"
+        android:src="@drawable/purpl_egradient"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/black_rectangle" />
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/full_logo"
+        android:src="@drawable/group4"
+        app:layout_constraintBottom_toBottomOf="@id/purple_rec"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/black_rectangle"/>
+        app:layout_constraintTop_toTopOf="@+id/black_rectangle"
+        app:layout_constraintVertical_bias="0.2"/>
+
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ellipse_auth"
+        android:src="@drawable/group5"
+        app:layout_constraintBottom_toBottomOf="@id/purple_rec"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/black_rectangle"
+        app:layout_constraintVertical_bias="0.99"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@color/material_dynamic_neutral30"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/black_rectangle"/>
 
-    <Button
+    <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/btnAuth"
         android:layout_width="328dp"
         android:layout_height="54dp"
-        android:backgroundTint="@color/black"
+        android:backgroundTint="@color/white"
         android:text="login"
+        android:src="@drawable/group13"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintVertical_bias="0.8" />
 
     <TextView
         android:id="@+id/text"

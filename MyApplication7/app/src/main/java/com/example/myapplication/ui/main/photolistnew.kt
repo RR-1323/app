@@ -1,7 +1,40 @@
 package com.example.myapplication.ui.main
 
-class photolistnew : ArrayList<photolistnew.photoNewItem>(){
-    data class photoNewItem(
+import com.example.myapplication.PhotoEntity
+
+class photolistnew : ArrayList<Photo> ()
+
+
+
+data class Photo(
+    val id: String,
+    val urlsSmall: String,
+    val likedByUser: Boolean,
+    val likes: Int,
+    var isLikeProgress: Boolean = false,
+    val userName: String,
+    val userAvatar: String,
+    val height: Int,
+    val width: Int
+){
+    fun toPhotoEntity() = PhotoEntity(
+        photoId = id,
+        smallUrls = urlsSmall,
+        likedByUser = likedByUser,
+        counterLikes = likes,
+        userName = userName,
+        profileImage = userAvatar
+    )
+}
+data class Urls(
+    val raw: String,
+    val regular: String
+)
+
+/*
+(
+
+
         val alt_description: String,
         val blur_hash: String,
         val color: String,
@@ -138,3 +171,5 @@ class photolistnew : ArrayList<photolistnew.photoNewItem>(){
         }
     }
 }
+
+ */
