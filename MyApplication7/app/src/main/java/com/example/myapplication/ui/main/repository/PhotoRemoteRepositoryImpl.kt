@@ -1,20 +1,18 @@
 package com.example.myapplication.ui.main.repository
 
-import Profile
 import android.app.Application
 import android.content.ContentValues
 import android.content.ContentValues.TAG
 import android.util.Log
 import com.example.myapplication.PhotoListDto
-import com.example.myapplication.ui.main.*
+import com.example.myapplication.ui.main.Photo
+import com.example.myapplication.ui.main.WrapperPhotoDto
+import com.example.myapplication.ui.main.getRetrofitThis
 import com.example.myapplication.ui.main.model.Digest
 import com.example.myapplication.ui.main.model.DigestDto
 import com.example.myapplication.ui.main.model.PhotoDetails
 import com.example.myapplication.ui.main.profile.Requester
 import com.example.myapplication.ui.main.responses.me.MeResponse
-import retrofit2.http.DELETE
-import retrofit2.http.POST
-import retrofit2.http.Path
 
 
 class PhotoRemoteRepositoryImpl(private val application: Application) {
@@ -39,13 +37,15 @@ class PhotoRemoteRepositoryImpl(private val application: Application) {
 
 
     suspend fun getPhotoDetail(id: String): PhotoDetails {
-        Log.d(TAG, "getPhotoDetails:")
-        return getRetrofitThis().getPhotoDetails(id).toPhotoDetails()
+        val toPhotoDetails = getRetrofitThis().getPhotoDetails(id).toPhotoDetails()
+        Log.d(TAG, "getPhotoDetails: $toPhotoDetails")
+        return toPhotoDetails
     }
 
     suspend fun getProfile(): MeResponse {
-        Log.d(TAG, "getProfile:")
-        return getRetrofitThis().me()
+        val me = getRetrofitThis().me()
+        Log.d(TAG, "getProfile: $me")
+        return me
     }
 
 

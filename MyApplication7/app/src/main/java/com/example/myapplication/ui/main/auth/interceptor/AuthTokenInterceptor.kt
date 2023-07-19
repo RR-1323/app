@@ -1,16 +1,9 @@
 package com.example.myapplication.ui.main.auth.interceptor
 
 
-import android.app.Application
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStoreFile
-
+import android.content.ContentValues.TAG
+import android.util.Log
 import com.example.myapplication.ui.main.auth.TokenStorage
-import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
@@ -29,6 +22,7 @@ class AuthTokenInterceptor() : Interceptor {
             .apply {
 
                 val token = TokenStorage.accessToken
+                Log.d(TAG, "token = " + token.toString())
 //val token = "Sg9xeSqIq65judRStv7Hu-hCRt2Fwa_fTtmp4UuC45k"
                 if (token != null) {
                     header(authHeaderName, token.withBearer())
